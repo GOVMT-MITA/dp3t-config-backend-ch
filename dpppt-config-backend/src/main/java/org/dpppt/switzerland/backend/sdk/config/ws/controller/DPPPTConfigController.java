@@ -53,11 +53,13 @@ public class DPPPTConfigController {
 		return "Hello from DP3T Config WS";
 	}
 
-	@CrossOrigin(origins = { "https://editor.swagger.io" })
+	@CrossOrigin(origins = { "*" })
 	@GetMapping(value = "/config")
 	public @ResponseBody ResponseEntity<ConfigResponse> getConfig(@RequestParam(required = true) String appversion,
 			@RequestParam(required = true) String osversion, @RequestParam(required = true) String buildnr) {
 		ConfigResponse config = new ConfigResponse();
+		//setInfoTextForTestCase(config);
+		
 		// For iOS 13.6 users with language DE show information about weekly
 		// notification
 		if (osversion.equals(IOS_VERSION_DE_WEEKLY_NOTIFCATION_INFO)) {
@@ -85,6 +87,20 @@ public class DPPPTConfigController {
 			@RequestParam(required = true) String buildnr) {
 		ConfigResponse body = mockConfigResponseWithInfoBox();
 		return ResponseEntity.ok(body);
+	}
+
+	private void setInfoTextForTestCase(ConfigResponse configResponse) {
+		InfoBox infoBoxEn = new InfoBox();
+		infoBoxEn.setMsg(
+				"What if I told you...");
+		infoBoxEn.setTitle("What if");
+		infoBoxEn.setUrl(
+				"https://kymkemp.com/wp-content/uploads/2016/11/what-if-i-ivqix6.jpg");
+		infoBoxEn.setUrlTitle("Tap here to continue reading.");
+		infoBoxEn.setIsDismissible(true);
+		InfoBoxCollection infoBoxCollection = new InfoBoxCollection();
+		infoBoxCollection.setAllInfoBoxes(infoBoxEn);
+		configResponse.setInfoBox(infoBoxCollection);
 	}
 
 	private void setInfoTextForiOS136DE(ConfigResponse configResponse) {

@@ -28,6 +28,20 @@ public class InfoBoxCollection {
 	private InfoBox srInfoBox;
 	private InfoBox rmInfoBox;
 
+	public void setAllInfoBoxes(InfoBox infoBox) {
+		this.deInfoBox = infoBox;
+		this.frInfoBox = infoBox;
+		this.itInfoBox = infoBox;
+		this.enInfoBox = infoBox;
+		this.ptInfoBox = infoBox;
+		this.esInfoBox = infoBox;
+		this.sqInfoBox = infoBox;
+		this.bsInfoBox = infoBox;
+		this.hrInfoBox = infoBox;
+		this.srInfoBox = infoBox;
+		this.rmInfoBox = infoBox;
+	}
+
 	public InfoBox getPtInfoBox() {
 		return this.ptInfoBox;
 	}
