@@ -10,7 +10,21 @@
 
 package org.dpppt.switzerland.backend.sdk.config.ws;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+
+import java.io.IOException;
+import java.io.UnsupportedEncodingException;
+import java.nio.charset.Charset;
+import java.security.PublicKey;
+import java.util.List;
+import java.util.Map;
+
 import org.dpppt.switzerland.backend.sdk.config.ws.filter.ResponseWrapperFilter;
 import org.dpppt.switzerland.backend.sdk.config.ws.model.ConfigResponse;
 import org.junit.Test;
@@ -23,19 +37,9 @@ import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.web.context.WebApplicationContext;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
-
-import static org.junit.Assert.assertTrue;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
-
-import java.io.IOException;
-import java.nio.charset.Charset;
-import java.security.PublicKey;
-import java.util.List;
-import java.util.Map;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.JsonMappingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 import io.jsonwebtoken.Jwts;
 
@@ -75,6 +79,19 @@ public abstract class BaseControllerTest {
 		assertNotNull(resp.getInfoBox().getDeInfoBox());
 		assertEquals("App-Update im App Store", resp.getInfoBox().getDeInfoBox().getTitle());
 	}
+	
+	private void assertIsNoForceUpdate(MockHttpServletResponse result) throws Exception {
+		ConfigResponse resp = objectMapper.readValue(result.getContentAsString(Charset.forName("utf-8")), ConfigResponse.class);
+		assertFalse(resp.isForceUpdate());
+	}
+	
+	private void assertThresholds(MockHttpServletResponse result) throws JsonMappingException, JsonProcessingException, UnsupportedEncodingException {
+		ConfigResponse resp = objectMapper.readValue(result.getContentAsString(Charset.forName("utf-8")), ConfigResponse.class);
+		assertEquals(63, (int) resp.getiOSGaenSdkConfig().getHigherThreshold());
+		assertEquals(55, (int) resp.getiOSGaenSdkConfig().getLowerThreshold());
+		assertEquals(63, (int) resp.getAndroidGaenSdkConfig().getHigherThreshold());
+		assertEquals(55, (int) resp.getAndroidGaenSdkConfig().getLowerThreshold());
+	}
 
 	@Test
 	public void testHello() throws Exception {
@@ -109,7 +126,7 @@ public abstract class BaseControllerTest {
 	@Test
 	public void testForUpdateNote() throws Exception {
 		MockHttpServletResponse result = mockMvc.perform(
-				get("/v1/config").param("osversion", "ios12").param("appversion", "ios-1.0.0").param("buildnr", "ios-2020.0145asdfa34"))
+				get("/v1/config").param("osversion", "ios12").param("appversion", "ios-1.0.9").param("buildnr", "ios-2020.0145asdfa34"))
 				.andExpect(status().is2xxSuccessful()).andReturn().getResponse();
 			assertTestNoUpdate(result);
 		result = mockMvc.perform(
@@ -117,9 +134,9 @@ public abstract class BaseControllerTest {
 				.andExpect(status().is2xxSuccessful()).andReturn().getResponse();
 			assertTestNoUpdate(result);
 		result = mockMvc.perform(
-			get("/v1/config").param("osversion", "ios12").param("appversion", "ios-1.0.2").param("buildnr", "ios-2020.0145asdfa34"))
+			get("/v1/config").param("osversion", "ios12").param("appversion", "ios-1.0.8").param("buildnr", "ios-2020.0145asdfa34"))
 			.andExpect(status().is2xxSuccessful()).andReturn().getResponse();
-			assertTestNoUpdate(result);
+			assertTestNormalUpdate(result);
 		result = mockMvc.perform(
 			get("/v1/config").param("osversion", "ios12").param("appversion", "android-1.0").param("buildnr", "ios-2020.0145asdfa34"))
 			.andExpect(status().is2xxSuccessful()).andReturn().getResponse();
@@ -139,13 +156,37 @@ public abstract class BaseControllerTest {
 		result = mockMvc.perform(
 			get("/v1/config").param("osversion", "ios12").param("appversion", "ios-1.0.6").param("buildnr", "ios-2020.0145asdfa34"))
 			.andExpect(status().is2xxSuccessful()).andReturn().getResponse();
-			assertTestNoUpdate(result);
+			assertTestNormalUpdate(result);
 		
 		result = mockMvc.perform(
 				get("/v1/config").param("osversion", "ios12").param("appversion", "ios-1.0.7").param("buildnr", "ios-2020.0145asdfa34"))
 				.andExpect(status().is2xxSuccessful()).andReturn().getResponse();
+			assertTestNormalUpdate(result);				
+	
+		result = mockMvc.perform(
+				get("/v1/config").param("osversion", "ios13.7").param("appversion", "ios-1.0.9").param("buildnr", "ios-2020.0145asdfa34"))
+				.andExpect(status().is2xxSuccessful()).andReturn().getResponse();
 			assertTestNoUpdate(result);
+		result = mockMvc.perform(
+					get("/v1/config").param("osversion", "ios14").param("appversion", "ios-1.0.9").param("buildnr", "ios-2020.0145asdfa34"))
+					.andExpect(status().is2xxSuccessful()).andReturn().getResponse();
+				assertTestNoUpdate(result);			
 	}
+	
+	@Test
+	public void testNoForceUpdate() throws Exception {
+		MockHttpServletResponse result = mockMvc.perform(
+				get("/v1/config").param("osversion", "ios14.0").param("appversion", "ios-1.0.8").param("buildnr", "ios-2020.0145asdfa34"))
+				.andExpect(status().is2xxSuccessful()).andReturn().getResponse();
+			assertIsNoForceUpdate(result);	
+			
+		result = mockMvc.perform(
+					get("/v1/config").param("osversion", "ios13.7").param("appversion", "ios-1.0.7").param("buildnr", "ios-2020.0145asdfa34"))
+					.andExpect(status().is2xxSuccessful()).andReturn().getResponse();
+				assertIsNoForceUpdate(result);			
+	}
+
+
 	@Test
 	public void testForTestflight() throws Exception {
 		final List<String> testflightVersions = List.of("ios-200619.2333.175", 
@@ -163,5 +204,14 @@ public abstract class BaseControllerTest {
 				get("/v1/config").param("osversion", "ios12").param("appversion", "1.0.7").param("buildnr", "ios-200521.2320.80"))
 				.andExpect(status().is2xxSuccessful()).andReturn().getResponse();
 		assertTestNoUpdate(result);
+	}
+	
+	@Test
+	public void testThreshold() throws Exception {
+		MockHttpServletResponse result = mockMvc.perform(
+				get("/v1/config").param("osversion", "ios12").param("appversion", "ios-1.0.9").param("buildnr", "ios-2020.0145asdfa34"))
+				.andExpect(status().is2xxSuccessful()).andReturn().getResponse();
+		
+		assertThresholds(result);
 	}
 }

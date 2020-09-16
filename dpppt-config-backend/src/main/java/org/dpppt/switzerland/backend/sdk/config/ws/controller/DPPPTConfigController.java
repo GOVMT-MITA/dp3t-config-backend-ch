@@ -13,6 +13,7 @@ package org.dpppt.switzerland.backend.sdk.config.ws.controller;
 import java.time.Duration;
 import java.util.List;
 
+import org.dpppt.switzerland.backend.sdk.config.ws.helper.IOS136InfoBoxHelper;
 import org.dpppt.switzerland.backend.sdk.config.ws.model.ConfigResponse;
 import org.dpppt.switzerland.backend.sdk.config.ws.model.InfoBox;
 import org.dpppt.switzerland.backend.sdk.config.ws.model.InfoBoxCollection;
@@ -39,15 +40,17 @@ public class DPPPTConfigController {
 			   "ios-200528.2230.100",
 			   "ios-200524.1316.87",
 			   "ios-200521.2320.79");
+	private static final String IOS_VERSION_13_7 = "ios13.7";
+	private static final String IOS_VERSION_14 = "ios14.0";
+	private static final Version APP_VERSION_1_0_9 = new Version("ios-1.0.9");
 
-	
 	private static final Logger logger = LoggerFactory.getLogger(DPPPTConfigController.class);
 
 
 	public DPPPTConfigController() {
 	}
 
-	@CrossOrigin(origins = { "https://editor.swagger.io" })
+	@CrossOrigin(origins = { "*" })
 	@GetMapping(value = "")
 	public @ResponseBody String hello() {
 		return "Hello from DP3T Config WS";
@@ -60,10 +63,9 @@ public class DPPPTConfigController {
 		ConfigResponse config = new ConfigResponse();
 		//setInfoTextForTestCase(config);
 		
-		// For iOS 13.6 users with language DE show information about weekly
-		// notification
-		if (osversion.equals(IOS_VERSION_DE_WEEKLY_NOTIFCATION_INFO)) {
-			setInfoTextForiOS136DE(config);
+		// For iOS 13.6 users show information about weekly notification
+		if (osversion.startsWith(IOS_VERSION_DE_WEEKLY_NOTIFCATION_INFO)) {
+			IOS136InfoBoxHelper.setInfoTextForiOS136(config);
 		}
 
 		// if we have testflight builds suggest to switch to store version
@@ -77,10 +79,16 @@ public class DPPPTConfigController {
 		if (buildnr.equals("ios-200524.1316.87")) {
 			config.getiOSGaenSdkConfig().setFactorHigh(0.0d);
 		}
+
+		// Check for old app Versions, iOS only
+		Version userAppVersion = new Version(appversion);
+		if (userAppVersion.isIOS() && APP_VERSION_1_0_9.isLargerVersionThan(userAppVersion)) {
+			config = generalUpdateRelease(true);
+		}
 		return ResponseEntity.ok().cacheControl(CacheControl.maxAge(Duration.ofMinutes(5))).body(config);
 	}
 
-	@CrossOrigin(origins = { "https://editor.swagger.io" })
+	@CrossOrigin(origins = { "*" })
 	@GetMapping(value = "/testinfobox/config")
 	public @ResponseBody ResponseEntity<ConfigResponse> getGhettoboxConfig(
 			@RequestParam(required = true) String appversion, @RequestParam(required = true) String osversion,
@@ -100,22 +108,6 @@ public class DPPPTConfigController {
 		infoBoxEn.setIsDismissible(true);
 		InfoBoxCollection infoBoxCollection = new InfoBoxCollection();
 		infoBoxCollection.setAllInfoBoxes(infoBoxEn);
-		configResponse.setInfoBox(infoBoxCollection);
-	}
-
-	private void setInfoTextForiOS136DE(ConfigResponse configResponse) {
-		InfoBox infoBoxDe = new InfoBox();
-		infoBoxDe.setMsg(
-				"Neu erscheint auf iOS 13.6 von Apple wöchentlich eine Benachrichtigung: «Dein Gerät hat 0 mögliche Begegnungen identifiziert.»"
-				+ " Dies ist ein Übersetzungsfehler. Es bedeutet, dass es null positiv getestete Kontakte gab."
-				+ " Die App funktioniert weiterhin und zeichnet alle Kontakte auf.");
-		infoBoxDe.setTitle("Hinweis");
-		infoBoxDe.setUrl(
-				"https://www.bag.admin.ch/bag/de/home/krankheiten/ausbrueche-epidemien-pandemien/aktuelle-ausbrueche-epidemien/novel-cov/faq-kontakte-downloads/haeufig-gestellte-fragen.html?faq-url=/de/categories/swisscovid-app");
-		infoBoxDe.setUrlTitle("Weitere Informationen");
-		infoBoxDe.setIsDismissible(true);
-		InfoBoxCollection infoBoxCollection = new InfoBoxCollection();
-		infoBoxCollection.setDeInfoBox(infoBoxDe);
 		configResponse.setInfoBox(infoBoxCollection);
 	}
 
@@ -198,13 +190,14 @@ public class DPPPTConfigController {
 
 	}
 
-	private ConfigResponse generalUpdateRelease1(boolean isIos) {
+	private ConfigResponse generalUpdateRelease(boolean isIos) {
 		ConfigResponse configResponse = new ConfigResponse();
 		String appstoreUrl = isIos ? "https://apps.apple.com/ch/app/id1509275381"
 				: "https://play.google.com/store/apps/details?id=ch.admin.bag.dp3t";
 
 		String store = isIos ? "App Store" : "Play Store";
 		String storeFr = isIos ? "l'App Store" : "le Play Store";
+        String storeRm = isIos ? "da l'App Store" : "dal Play Store";
 
 		InfoBox infoBoxde = new InfoBox();
 		infoBoxde.setMsg(
@@ -213,6 +206,8 @@ public class DPPPTConfigController {
 		infoBoxde.setTitle("App-Update verfügbar");
 		infoBoxde.setUrlTitle("Aktualisieren");
 		infoBoxde.setUrl(appstoreUrl);
+		infoBoxde.setIsDismissible(false);
+		
 		InfoBox infoBoxfr = new InfoBox();
 		infoBoxfr.setMsg(
 				"Une nouvelle version de SwissCovid est disponible. Afin que l'application fonctionne au mieux, téléchargez la dernière version sur "
@@ -220,6 +215,8 @@ public class DPPPTConfigController {
 		infoBoxfr.setTitle("Mise à jour disponible");
 		infoBoxfr.setUrlTitle("Mettre à jour");
 		infoBoxfr.setUrl(appstoreUrl);
+		infoBoxfr.setIsDismissible(false);
+		
 		InfoBox infoBoxit = new InfoBox();
 		infoBoxit.setMsg(
 				"È disponibile una versione più recente di SwissCovid. Per ottimizzare la funzionalità dell'app, scarica l'ultima versione da "
@@ -227,6 +224,8 @@ public class DPPPTConfigController {
 		infoBoxit.setTitle("È disponibile un aggiornamento dell'app");
 		infoBoxit.setUrlTitle("Aggiorna");
 		infoBoxit.setUrl(appstoreUrl);
+		infoBoxit.setIsDismissible(false);
+		
 		InfoBox infoBoxen = new InfoBox();
 		infoBoxen.setMsg(
 				"An updated version of SwissCovid is available. To guarantee the app works as well as possible, download the latest version from the "
@@ -234,6 +233,8 @@ public class DPPPTConfigController {
 		infoBoxen.setTitle("App update available");
 		infoBoxen.setUrlTitle("Update");
 		infoBoxen.setUrl(appstoreUrl);
+		infoBoxen.setIsDismissible(false);
+		
 		InfoBox infoBoxpt = new InfoBox();
 		infoBoxpt.setMsg(
 				"Está disponível uma nova versão da SwissCovid. Para que a app trabalhe com toda a eficiência, carregue a versão mais recente a partir da "
@@ -241,6 +242,8 @@ public class DPPPTConfigController {
 		infoBoxpt.setTitle("Atualização da app disponível");
 		infoBoxpt.setUrlTitle("Atualizar");
 		infoBoxpt.setUrl(appstoreUrl);
+		infoBoxpt.setIsDismissible(false);
+		
 		InfoBox infoBoxes = new InfoBox();
 		infoBoxes.setMsg(
 				"Hay una nueva versión de SwissCovid disponible. Para garantizar el mejor funcionamiento posible, descargue siempre la versión más nueva en el "
@@ -248,6 +251,8 @@ public class DPPPTConfigController {
 		infoBoxes.setTitle("Actualización de la app disponible");
 		infoBoxes.setUrlTitle("Actualizar");
 		infoBoxes.setUrl(appstoreUrl);
+		infoBoxes.setIsDismissible(false);
+		
 		InfoBox infoBoxsq = new InfoBox();
 		infoBoxsq.setMsg(
 				"Është i disponueshëm një version i ri nga SwissCovid. Për të marrë mënyrën më të mirë të mundshme të funksionit të aplikacionit, ngarkoni versionin më të ri nga "
@@ -255,6 +260,8 @@ public class DPPPTConfigController {
 		infoBoxsq.setTitle("Update i aplikacionit i disponueshëm");
 		infoBoxsq.setUrlTitle("Përditësimi");
 		infoBoxsq.setUrl(appstoreUrl);
+		infoBoxsq.setIsDismissible(false);
+		
 		InfoBox infoBoxbs = new InfoBox();
 		infoBoxbs.setMsg(
 				"Dostupna je novija verzija aplikacije SwissCovid. Da biste održavali najbolju moguću funkcionalnost aplikacije, preuzmite najnoviju verziju iz trgovine aplikacijama "
@@ -262,6 +269,8 @@ public class DPPPTConfigController {
 		infoBoxbs.setTitle("Dostupno ažuriranje aplikacije");
 		infoBoxbs.setUrlTitle("Ažuriraj");
 		infoBoxbs.setUrl(appstoreUrl);
+		infoBoxbs.setIsDismissible(false);
+		
 		InfoBox infoBoxhr = new InfoBox();
 		infoBoxhr.setMsg(
 				"Dostupna je novija verzija aplikacije SwissCovid. Da biste održavali najbolju moguću funkcionalnost aplikacije, preuzmite najnoviju verziju iz trgovine aplikacijama "
@@ -269,12 +278,16 @@ public class DPPPTConfigController {
 		infoBoxhr.setTitle("Dostupno ažuriranje aplikacije");
 		infoBoxhr.setUrlTitle("Ažuriraj");
 		infoBoxhr.setUrl(appstoreUrl);
+		infoBoxhr.setIsDismissible(false);
+		
 		InfoBox infoBoxrm = new InfoBox();
-		infoBoxrm.setMsg("Ina versiun pli nova da SwissCovid è a disposiziun. Chargiai la novissima versiun da " + store
-				+ " per che l'app funcziunia il meglier pussaivel.");
+		infoBoxrm.setMsg("Ina versiun pli nova da SwissCovid è disponibla. Chargiai giu l'ultima versiun " + storeRm
+				+ ", per che l'app funcziunia il meglier pussaivel.");
 		infoBoxrm.setTitle("Actualisaziun da l'app è disponibla");
 		infoBoxrm.setUrlTitle("Actualisar");
 		infoBoxrm.setUrl(appstoreUrl);
+		infoBoxrm.setIsDismissible(false);
+
 		InfoBox infoBoxsr = new InfoBox();
 		infoBoxsr.setMsg(
 				"Dostupna je novija verzija aplikacije SwissCovid. Da biste održavali najbolju moguću funkcionalnost aplikacije, preuzmite najnoviju verziju iz trgovine aplikacijama "
@@ -282,6 +295,23 @@ public class DPPPTConfigController {
 		infoBoxsr.setTitle("Dostupno ažuriranje aplikacije");
 		infoBoxsr.setUrlTitle("Ažuriraj");
 		infoBoxsr.setUrl(appstoreUrl);
+		infoBoxsr.setIsDismissible(false);
+		
+		InfoBox infoBoxtr = new InfoBox();
+		infoBoxtr.setMsg(
+				"SwissCovid uygulamasının yeni sürümü bulunuyor. Uygulamayı en iyi şekilde kullanabilmek için AppStore'dan uygulamanın son sürümünü yükleyin.");
+		infoBoxtr.setTitle("Güncelleştirme mevcut");
+		infoBoxtr.setUrlTitle("Güncelle");
+		infoBoxtr.setUrl(appstoreUrl);
+		infoBoxtr.setIsDismissible(false);
+		
+		InfoBox infoBoxti = new InfoBox();
+		infoBoxti.setMsg(
+				"ሓድሽ ቨርዝዮን ናይ SwissCovid ተቐሪቡ። ዝበለጸ ኣሰራርሓ ናይቲ ኤፕ መታን ክወሃበኩም፣ እቲ ሓድሽ ቨርዝዮን ካብ AppStore ብዳውንሎድ ኣምጽኡ ኢኹም።");
+		infoBoxti.setTitle("ሓድሽ ኤፕ-ኣፕደይት ኣሎ");
+		infoBoxti.setUrlTitle("ምምሕዳስ");
+		infoBoxti.setUrl(appstoreUrl);
+		infoBoxti.setIsDismissible(false);
 
 		InfoBoxCollection collection = new InfoBoxCollection();
 		collection.setDeInfoBox(infoBoxde);
@@ -295,6 +325,9 @@ public class DPPPTConfigController {
 		collection.setBsInfoBox(infoBoxbs);
 		collection.setRmInfoBox(infoBoxrm);
 		collection.setSrInfoBox(infoBoxsr);
+		collection.setTiInfobox(infoBoxti);
+		collection.setTrInfobox(infoBoxtr);
+		
 		configResponse.setInfoBox(collection);
 
 		SDKConfig config = new SDKConfig();
