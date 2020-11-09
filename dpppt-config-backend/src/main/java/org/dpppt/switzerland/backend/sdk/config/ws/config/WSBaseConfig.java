@@ -31,12 +31,15 @@ import org.bouncycastle.util.io.pem.PemObject;
 import org.bouncycastle.util.io.pem.PemReader;
 import org.dpppt.switzerland.backend.sdk.config.ws.controller.DPPPTConfigController;
 import org.dpppt.switzerland.backend.sdk.config.ws.filter.ResponseWrapperFilter;
+import org.dpppt.switzerland.backend.sdk.config.ws.filter.StatsFilter;
 import org.dpppt.switzerland.backend.sdk.config.ws.interceptor.HeaderInjector;
 import org.dpppt.switzerland.backend.sdk.config.ws.model.ConfigResponse;
 import org.dpppt.switzerland.backend.sdk.config.ws.model.FaqEntry;
 import org.dpppt.switzerland.backend.sdk.config.ws.model.WhatToDoPositiveTestTexts;
 import org.dpppt.switzerland.backend.sdk.config.ws.model.WhatToDoPositiveTestTextsCollection;
 import org.dpppt.switzerland.backend.sdk.config.ws.poeditor.Messages;
+import org.dpppt.switzerland.backend.sdk.config.ws.stats.StatsRepository;
+import org.dpppt.switzerland.backend.sdk.config.ws.stats.StatsRepositoryImpl;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
@@ -79,8 +82,8 @@ public abstract class WSBaseConfig implements SchedulingConfigurer, WebMvcConfig
 	}
 
 	@Bean
-	public DPPPTConfigController dppptSDKController(Messages messages) {
-		return new DPPPTConfigController(messages);
+	public DPPPTConfigController dppptSDKController(Messages messages, StatsRepository statsRepository) {
+		return new DPPPTConfigController(messages, statsRepository);
 	}
 
 	@Bean
@@ -88,6 +91,16 @@ public abstract class WSBaseConfig implements SchedulingConfigurer, WebMvcConfig
 		return new ResponseWrapperFilter(getKeyPair(algorithm), retentionDays, protectedHeaders);
 	}
 
+	@Bean
+	public StatsRepository statsRepository() {
+		return new StatsRepositoryImpl();
+	}
+	
+	@Bean
+	public StatsFilter statsFilter(StatsRepository statsRepository) {
+		return new StatsFilter(statsRepository);
+	}
+	
 	@Bean
 	public HeaderInjector securityHeaderInjector(){
 		return new HeaderInjector(additionalHeaders);

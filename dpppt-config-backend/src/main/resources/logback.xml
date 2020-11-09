@@ -34,7 +34,7 @@
     <logger name="org.dpppt.switzerland" level="DEBUG"/>
     <!--    <logger name="org.springframework.web" level="DEBUG"/>-->
     <root level="INFO">
-        <appender-ref ref="logfile"/>
+        <!-- <appender-ref ref="logfile"/>  -->
         <appender-ref ref="stdout"/>
     </root>
 </configuration>

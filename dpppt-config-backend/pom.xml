@@ -147,6 +147,15 @@
       <artifactId>spring-security-web</artifactId>
     </dependency>
 
+<dependency>
+    <groupId>commons-codec</groupId>
+    <artifactId>commons-codec</artifactId>
+</dependency>
+<dependency>
+    <groupId>net.jodah</groupId>
+    <artifactId>expiringmap</artifactId>
+    <version>0.5.9</version>
+</dependency>
     </dependencies>
 
     <dependencyManagement>
@@ -170,6 +179,7 @@
                 <enabled>true</enabled>
             </snapshots>
         </repository>
+        
     </repositories>
 
     <build>

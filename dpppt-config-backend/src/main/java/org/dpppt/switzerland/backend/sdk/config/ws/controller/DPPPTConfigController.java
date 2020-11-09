@@ -19,6 +19,8 @@ import org.dpppt.switzerland.backend.sdk.config.ws.helper.IOS136InfoBoxHelper;
 import org.dpppt.switzerland.backend.sdk.config.ws.model.*;
 import org.dpppt.switzerland.backend.sdk.config.ws.poeditor.Messages;
 import org.dpppt.switzerland.backend.sdk.config.ws.semver.Version;
+import org.dpppt.switzerland.backend.sdk.config.ws.stats.CheckinsStats;
+import org.dpppt.switzerland.backend.sdk.config.ws.stats.StatsRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.context.annotation.Bean;
@@ -50,9 +52,12 @@ public class DPPPTConfigController {
 
     private static Messages messages;
 
-    public DPPPTConfigController(Messages messages) {
-        this.messages = messages;
-    }
+	private StatsRepository statsRepository;
+	
+	public DPPPTConfigController(Messages messages, StatsRepository statsRepository) {
+		this.messages = messages;
+		this.statsRepository = statsRepository;
+	}
 
     @CrossOrigin(origins = {"https://editor.swagger.io"})
     @GetMapping(value = "")
@@ -120,6 +125,20 @@ public class DPPPTConfigController {
     ResponseEntity<ConfigResponse> getGhettoboxConfig(
             @RequestParam(required = true) String appversion, @RequestParam(required = true) String osversion,
             @RequestParam(required = true) String buildnr) {
+
+		logger.info("Number of active devices is " + statsRepository.getNumberOfActiveDevices());
+		
+		statsRepository.getActiveDevicesByOsVersion().entrySet().forEach(e -> { 
+			logger.info("Number of active devices using " + e.getKey() + " is " + e.getValue());
+		});
+		statsRepository.getActiveDevicesByCountry().entrySet().forEach(e -> { 
+			logger.info("Number of active devices from " + e.getKey() + " is " + e.getValue());
+		});
+		CheckinsStats cs = statsRepository.getCheckinsStats();
+		logger.info("Smallest number of checkins: " + cs.getSmallest());
+		logger.info("Biggest number of checkins: " + cs.getBiggest());
+		logger.info("Mean number of checkins: " + cs.getMean());
+
         ConfigResponse body = mockConfigResponseWithInfoBox();
         return ResponseEntity.ok(body);
     }
