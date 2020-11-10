@@ -10,12 +10,16 @@
 
 package org.dpppt.switzerland.backend.sdk.config.ws.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+
+@JsonIgnoreProperties(ignoreUnknown = true)
 public class ConfigResponse {
 
 	private boolean forceUpdate = false;
 	private boolean forceTraceShutdown = false;
 
 	private InfoBoxCollection infoBox = null;
+	private WhatToDoPositiveTestTextsCollection whatToDoPositiveTestTexts;
 
 	private SDKConfig sdkConfig = new SDKConfig();
 	private GAENSDKConfig iOSGaenSdkConfig = new GAENSDKConfig();
@@ -45,7 +49,15 @@ public class ConfigResponse {
 		this.infoBox = infoBox;
 	}
 
-	public boolean isForceTraceShutdown() {
+    public WhatToDoPositiveTestTextsCollection getWhatToDoPositiveTestTexts() {
+        return whatToDoPositiveTestTexts;
+    }
+
+    public void setWhatToDoPositiveTestTexts(WhatToDoPositiveTestTextsCollection whatToDoPositiveTestTexts) {
+        this.whatToDoPositiveTestTexts = whatToDoPositiveTestTexts;
+    }
+
+    public boolean isForceTraceShutdown() {
 		return forceTraceShutdown;
 	}
 

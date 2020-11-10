@@ -10,6 +10,7 @@
 
 package org.dpppt.switzerland.backend.sdk.config.ws.config;
 
+import io.jsonwebtoken.SignatureAlgorithm;
 import java.io.ByteArrayInputStream;
 import java.io.Reader;
 import java.io.StringReader;
@@ -20,27 +21,35 @@ import java.security.PublicKey;
 import java.security.Security;
 import java.security.cert.CertificateFactory;
 import java.security.spec.PKCS8EncodedKeySpec;
+import java.util.Arrays;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
-
+import java.util.concurrent.TimeUnit;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.bouncycastle.util.io.pem.PemObject;
 import org.bouncycastle.util.io.pem.PemReader;
 import org.dpppt.switzerland.backend.sdk.config.ws.controller.DPPPTConfigController;
 import org.dpppt.switzerland.backend.sdk.config.ws.filter.ResponseWrapperFilter;
 import org.dpppt.switzerland.backend.sdk.config.ws.interceptor.HeaderInjector;
+import org.dpppt.switzerland.backend.sdk.config.ws.model.ConfigResponse;
+import org.dpppt.switzerland.backend.sdk.config.ws.model.FaqEntry;
+import org.dpppt.switzerland.backend.sdk.config.ws.model.WhatToDoPositiveTestTexts;
+import org.dpppt.switzerland.backend.sdk.config.ws.model.WhatToDoPositiveTestTextsCollection;
+import org.dpppt.switzerland.backend.sdk.config.ws.poeditor.Messages;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.MessageSource;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.support.ReloadableResourceBundleMessageSource;
+import org.springframework.http.CacheControl;
 import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.scheduling.annotation.SchedulingConfigurer;
 import org.springframework.web.servlet.config.annotation.InterceptorRegistry;
 import org.springframework.web.servlet.config.annotation.ResourceHandlerRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
-
-import io.jsonwebtoken.SignatureAlgorithm;
 
 @Configuration
 @EnableScheduling
@@ -64,12 +73,14 @@ public abstract class WSBaseConfig implements SchedulingConfigurer, WebMvcConfig
 
 	@Override
 	public void addResourceHandlers(ResourceHandlerRegistry registry) {
-		registry.addResourceHandler("/**").addResourceLocations("classpath:/static/");
+        registry.addResourceHandler("/**")
+                .addResourceLocations("classpath:/static/ios_agency_image")
+                .setCacheControl(CacheControl.maxAge(1, TimeUnit.HOURS));
 	}
 
 	@Bean
-	public DPPPTConfigController dppptSDKController() {
-		return new DPPPTConfigController();
+	public DPPPTConfigController dppptSDKController(Messages messages) {
+		return new DPPPTConfigController(messages);
 	}
 
 	@Bean
@@ -120,4 +131,23 @@ public abstract class WSBaseConfig implements SchedulingConfigurer, WebMvcConfig
 			throw new RuntimeException();
 		}
 	}
+
+    @Bean
+    public Messages messages(MessageSource messageSource) {
+		Messages messages = new Messages(messageSource);
+		return messages;
+    }
+
+    @Bean
+    public MessageSource messageSource() {
+        ReloadableResourceBundleMessageSource messageSource =
+                new ReloadableResourceBundleMessageSource();
+
+        messageSource.setBasename("classpath:i18n/messages");
+        messageSource.setDefaultEncoding("UTF-8");
+        messageSource.setFallbackToSystemLocale(false);
+        messageSource.setDefaultLocale(null);
+        return messageSource;
+    }
+
 }
