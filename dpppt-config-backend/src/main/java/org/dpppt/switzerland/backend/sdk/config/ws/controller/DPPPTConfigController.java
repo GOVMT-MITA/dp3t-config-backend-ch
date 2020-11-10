@@ -71,7 +71,7 @@ public class DPPPTConfigController {
 
         // For iOS 13.6 users show information about weekly notification
         if (osversion.startsWith(IOS_VERSION_DE_WEEKLY_NOTIFCATION_INFO)) {
-            IOS136InfoBoxHelper.setInfoTextForiOS136(config);
+            //IOS136InfoBoxHelper.setInfoTextForiOS136(config);
         }
 
         // if we have testflight builds suggest to switch to store version
