@@ -2,22 +2,40 @@
 #      Makefile      #
 ######################
 
+FILE_NAME = documentation.tex
+
+LATEX = xelatex
+BIBER = biber
 RUSTY_SWAGGER = rusty-swagger
 
 all: clean all1
-all1: clean updateproject
-no: clean updateproject updatedoc swagger
+all1: clean updateproject updatedoc swagger la la2 la3 
+no: clean updateproject updatedoc swagger la la2 
 docker-build: updateproject docker
-doc: updatedoc swagger
+doc: updatedoc swagger la la2 la3
 
 updateproject:
-	mvn -f dpppt-config-backend/pom.xml install -DskipTests
+	mvn -f dpppt-config-backend/pom.xml install
+
 updatedoc:
+	mvn -f dpppt-config-backend/pom.xml install -Dmaven.test.skip=true
 	mvn springboot-swagger-3:springboot-swagger-3 -f dpppt-config-backend/pom.xml
+	mkdir -p documentation/yaml
 	cp dpppt-config-backend/generated/swagger/swagger.yaml documentation/yaml/sdk.yaml
 
 swagger:
-	cd documentation; $(RUSTY_SWAGGER) --file ../dpppt-backend-sdk//generated/swagger/swagger.yaml
+	cd documentation; $(RUSTY_SWAGGER) --file ../dpppt-config-backend/dpppt-config-backend/generated/swagger/swagger.yaml
+
+la:
+	cd documentation;$(LATEX) $(FILE_NAME)
+bib:
+	cd documentation;$(BIBER) $(FILE_NAME)
+la2:
+	cd documentation;$(LATEX) $(FILE_NAME)
+la3:
+	cd documentation;$(LATEX) $(FILE_NAME)
+show:
+	cd documentation; open $(FILE_NAME).pdf &
 
 docker:
 	cp dpppt-config-backend/target/dpppt-config-backend.jar ws-config/ws/bin/
