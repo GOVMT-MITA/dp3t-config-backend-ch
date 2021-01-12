@@ -61,7 +61,7 @@ public class DPPPTConfigController {
         return "Hello from DP3T Config WS";
     }
 
-    @CrossOrigin(origins = {"https://editor.swagger.io"})
+    @CrossOrigin(origins = {"https://editor.swagger.io","https://admin-test.ws.covidalert.gov.mt","https://admin.ws.covidalert.gov.mt"})
     @GetMapping(value = "/config")
     public @ResponseBody
     ResponseEntity<ConfigResponse> getConfig(@RequestParam(required = true) String appversion,
