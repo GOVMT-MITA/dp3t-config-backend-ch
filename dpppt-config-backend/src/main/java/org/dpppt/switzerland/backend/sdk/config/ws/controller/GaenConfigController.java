@@ -116,7 +116,7 @@ public class GaenConfigController {
 	@Documentation(description = "Read latest configuration and messages, depending on the version of the phone and the"
 			+ " app.", responses = {
 					"200 => ConfigResponse structure with eventual notifications and epidemic parameters" })
-	@CrossOrigin(origins = {"https://editor.swagger.io","https://admin-test.ws.covidalert.gov.mt","https://admin.ws.covidalert.gov.mt"})
+	@CrossOrigin(origins = {"https://editor.swagger.io","https://admin-test.ws.covidalert.gov.mt","https://admin.ws.covidalert.gov.mt","https://covidalert-admin.azurewebsites.net"})
 	@GetMapping(value = "/config")
 	public @ResponseBody ResponseEntity<ConfigResponse> getConfig(
 			@Documentation(description = "Version of the App installed", example = "ios-1.0.7") @RequestParam String appversion,
