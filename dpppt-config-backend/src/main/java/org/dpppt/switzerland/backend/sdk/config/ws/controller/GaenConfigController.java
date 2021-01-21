@@ -15,6 +15,8 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Locale;
 
+import javax.swing.event.ListSelectionEvent;
+
 import org.dpppt.switzerland.backend.sdk.config.ws.helper.IOS136InfoBoxHelper;
 import org.dpppt.switzerland.backend.sdk.config.ws.helper.MockHelper;
 import org.dpppt.switzerland.backend.sdk.config.ws.helper.TestLocationHelper;
@@ -38,6 +40,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 
 import ch.ubique.openapi.docannotations.Documentation;
+import io.jsonwebtoken.lang.Collections;
 
 /**
  * 
@@ -119,7 +122,12 @@ public class GaenConfigController {
 			@Documentation(description = "Version of the App installed", example = "ios-1.0.7") @RequestParam String appversion,
 			@Documentation(description = "Version of the OS", example = "ios13.6") @RequestParam String osversion,
 			@Documentation(description = "Build number of the app", example = "ios-200619.2333.175") @RequestParam String buildnr) {
+		
 		ConfigResponse config = new ConfigResponse();
+		
+		config.setEuSharingEnabled(false);
+		config.setEuSharingCountries(null);
+		
 		config.setWhatToDoPositiveTestTexts(whatToDoPositiveTestTexts(messages));
 		config.setTestLocations(testLocationHelper.getTestLocations());
 
@@ -165,6 +173,7 @@ public class GaenConfigController {
 			moveEnterCovidcodeBoxTextToInfoBoxIfNecessary(config.getWhatToDoPositiveTestTexts().getRm());
 			moveEnterCovidcodeBoxTextToInfoBoxIfNecessary(config.getWhatToDoPositiveTestTexts().getTr());
 			moveEnterCovidcodeBoxTextToInfoBoxIfNecessary(config.getWhatToDoPositiveTestTexts().getTi());
+			moveEnterCovidcodeBoxTextToInfoBoxIfNecessary(config.getWhatToDoPositiveTestTexts().getMt());
 		}
 
 		return ResponseEntity.ok().cacheControl(CacheControl.maxAge(Duration.ofMinutes(5))).body(config);
@@ -202,6 +211,11 @@ public class GaenConfigController {
 		infoBoxen.setMsg("The app will no longer be available via Testflight.");
 		infoBoxen.setTitle("App update in the App Store");
 		infoBoxen.setUrlTitle("Update");
+		infoBoxen.setUrl(iosURL);
+		InfoBox infoBoxmt = new InfoBox();
+		infoBoxmt.setMsg("The app will no longer be available via Testflight.");
+		infoBoxmt.setTitle("App update in the App Store");
+		infoBoxmt.setUrlTitle("Update");
 		infoBoxen.setUrl(iosURL);
 		InfoBox infoBoxpt = new InfoBox();
 		infoBoxpt.setMsg("Futuramente, a app deixará de estar disponível na Testflight.");
@@ -242,6 +256,7 @@ public class GaenConfigController {
 		InfoBoxCollection collection = new InfoBoxCollection();
 		collection.setDeInfoBox(infoBoxde);
 		collection.setEnInfoBox(infoBoxen);
+		collection.setMtInfobox(infoBoxmt);
 		collection.setFrInfoBox(infoBoxfr);
 		collection.setItInfoBox(infoBoxit);
 		collection.setPtInfoBox(infoBoxpt);
@@ -259,8 +274,8 @@ public class GaenConfigController {
 
 	private ConfigResponse generalUpdateRelease(boolean isIos) {
 		ConfigResponse configResponse = new ConfigResponse();
-		String appstoreUrl = isIos ? "https://apps.apple.com/ch/app/id1509275381"
-				: "https://play.google.com/store/apps/details?id=ch.admin.bag.dp3t";
+		String appstoreUrl = isIos ? "https://apps.apple.com/mt/app/covid-alert-malta/id1513522951"
+				: "https://play.google.com/store/apps/details?id=mt.gov.dp3t";
 
 		String store = isIos ? "App Store" : "Play Store";
 		String storeFr = isIos ? "l'App Store" : "le Play Store";
@@ -268,7 +283,7 @@ public class GaenConfigController {
 
 		InfoBox infoBoxde = new InfoBox();
 		infoBoxde.setMsg(
-				"Es ist eine neuere Version von SwissCovid verfügbar. Um die bestmögliche Funktionsweise der App zu erhalten, laden Sie die neuste Version vom "
+				"Es ist eine neuere Version von COVID Alert Malta verfügbar. Um die bestmögliche Funktionsweise der App zu erhalten, laden Sie die neuste Version vom "
 						+ store);
 		infoBoxde.setTitle("App-Update verfügbar");
 		infoBoxde.setUrlTitle("Aktualisieren");
@@ -277,7 +292,7 @@ public class GaenConfigController {
 
 		InfoBox infoBoxfr = new InfoBox();
 		infoBoxfr.setMsg(
-				"Une nouvelle version de SwissCovid est disponible. Afin que l'application fonctionne au mieux, téléchargez la dernière version sur "
+				"Une nouvelle version de COVID Alert Malta est disponible. Afin que l'application fonctionne au mieux, téléchargez la dernière version sur "
 						+ storeFr);
 		infoBoxfr.setTitle("Mise à jour disponible");
 		infoBoxfr.setUrlTitle("Mettre à jour");
@@ -286,7 +301,7 @@ public class GaenConfigController {
 
 		InfoBox infoBoxit = new InfoBox();
 		infoBoxit.setMsg(
-				"È disponibile una versione più recente di SwissCovid. Per ottimizzare la funzionalità dell'app, scarica l'ultima versione da "
+				"È disponibile una versione più recente di COVID Alert Malta. Per ottimizzare la funzionalità dell'app, scarica l'ultima versione da "
 						+ store);
 		infoBoxit.setTitle("È disponibile un aggiornamento dell'app");
 		infoBoxit.setUrlTitle("Aggiorna");
@@ -295,16 +310,25 @@ public class GaenConfigController {
 
 		InfoBox infoBoxen = new InfoBox();
 		infoBoxen.setMsg(
-				"An updated version of SwissCovid is available. To guarantee the app works as well as possible, download the latest version from the "
+				"An updated version of COVID Alert Malta is available. To guarantee the app works as well as possible, download the latest version from the "
 						+ store);
 		infoBoxen.setTitle("App update available");
 		infoBoxen.setUrlTitle("Update");
 		infoBoxen.setUrl(appstoreUrl);
 		infoBoxen.setIsDismissible(false);
 
+		InfoBox infoBoxmt = new InfoBox();
+		infoBoxmt.setMsg(
+				"An updated version of COVID Alert Malta is available. To guarantee the app works as well as possible, download the latest version from the "
+						+ store);
+		infoBoxmt.setTitle("App update available");
+		infoBoxmt.setUrlTitle("Update");
+		infoBoxmt.setUrl(appstoreUrl);
+		infoBoxmt.setIsDismissible(false);
+
 		InfoBox infoBoxpt = new InfoBox();
 		infoBoxpt.setMsg(
-				"Está disponível uma nova versão da SwissCovid. Para que a app trabalhe com toda a eficiência, carregue a versão mais recente a partir da "
+				"Está disponível uma nova versão da COVID Alert Malta. Para que a app trabalhe com toda a eficiência, carregue a versão mais recente a partir da "
 						+ store);
 		infoBoxpt.setTitle("Atualização da app disponível");
 		infoBoxpt.setUrlTitle("Atualizar");
@@ -313,7 +337,7 @@ public class GaenConfigController {
 
 		InfoBox infoBoxes = new InfoBox();
 		infoBoxes.setMsg(
-				"Hay una nueva versión de SwissCovid disponible. Para garantizar el mejor funcionamiento posible, descargue siempre la versión más nueva en el "
+				"Hay una nueva versión de COVID Alert Malta disponible. Para garantizar el mejor funcionamiento posible, descargue siempre la versión más nueva en el "
 						+ store);
 		infoBoxes.setTitle("Actualización de la app disponible");
 		infoBoxes.setUrlTitle("Actualizar");
@@ -322,7 +346,7 @@ public class GaenConfigController {
 
 		InfoBox infoBoxsq = new InfoBox();
 		infoBoxsq.setMsg(
-				"Është i disponueshëm një version i ri nga SwissCovid. Për të marrë mënyrën më të mirë të mundshme të funksionit të aplikacionit, ngarkoni versionin më të ri nga "
+				"Është i disponueshëm një version i ri nga COVID Alert Malta. Për të marrë mënyrën më të mirë të mundshme të funksionit të aplikacionit, ngarkoni versionin më të ri nga "
 						+ store);
 		infoBoxsq.setTitle("Update i aplikacionit i disponueshëm");
 		infoBoxsq.setUrlTitle("Përditësimi");
@@ -331,7 +355,7 @@ public class GaenConfigController {
 
 		InfoBox infoBoxbs = new InfoBox();
 		infoBoxbs.setMsg(
-				"Dostupna je novija verzija aplikacije SwissCovid. Da biste održavali najbolju moguću funkcionalnost aplikacije, preuzmite najnoviju verziju iz trgovine aplikacijama "
+				"Dostupna je novija verzija aplikacije COVID Alert Malta. Da biste održavali najbolju moguću funkcionalnost aplikacije, preuzmite najnoviju verziju iz trgovine aplikacijama "
 						+ store);
 		infoBoxbs.setTitle("Dostupno ažuriranje aplikacije");
 		infoBoxbs.setUrlTitle("Ažuriraj");
@@ -340,7 +364,7 @@ public class GaenConfigController {
 
 		InfoBox infoBoxhr = new InfoBox();
 		infoBoxhr.setMsg(
-				"Dostupna je novija verzija aplikacije SwissCovid. Da biste održavali najbolju moguću funkcionalnost aplikacije, preuzmite najnoviju verziju iz trgovine aplikacijama "
+				"Dostupna je novija verzija aplikacije COVID Alert Malta. Da biste održavali najbolju moguću funkcionalnost aplikacije, preuzmite najnoviju verziju iz trgovine aplikacijama "
 						+ store);
 		infoBoxhr.setTitle("Dostupno ažuriranje aplikacije");
 		infoBoxhr.setUrlTitle("Ažuriraj");
@@ -348,7 +372,7 @@ public class GaenConfigController {
 		infoBoxhr.setIsDismissible(false);
 
 		InfoBox infoBoxrm = new InfoBox();
-		infoBoxrm.setMsg("Ina versiun pli nova da SwissCovid è disponibla. Chargiai giu l'ultima versiun " + storeRm
+		infoBoxrm.setMsg("Ina versiun pli nova da COVID Alert Malta è disponibla. Chargiai giu l'ultima versiun " + storeRm
 				+ ", per che l'app funcziunia il meglier pussaivel.");
 		infoBoxrm.setTitle("Actualisaziun da l'app è disponibla");
 		infoBoxrm.setUrlTitle("Actualisar");
@@ -357,7 +381,7 @@ public class GaenConfigController {
 
 		InfoBox infoBoxsr = new InfoBox();
 		infoBoxsr.setMsg(
-				"Dostupna je novija verzija aplikacije SwissCovid. Da biste održavali najbolju moguću funkcionalnost aplikacije, preuzmite najnoviju verziju iz trgovine aplikacijama "
+				"Dostupna je novija verzija aplikacije COVID Alert Malta. Da biste održavali najbolju moguću funkcionalnost aplikacije, preuzmite najnoviju verziju iz trgovine aplikacijama "
 						+ store);
 		infoBoxsr.setTitle("Dostupno ažuriranje aplikacije");
 		infoBoxsr.setUrlTitle("Ažuriraj");
@@ -366,7 +390,7 @@ public class GaenConfigController {
 
 		InfoBox infoBoxtr = new InfoBox();
 		infoBoxtr.setMsg(
-				"SwissCovid uygulamasının yeni sürümü bulunuyor. Uygulamayı en iyi şekilde kullanabilmek için AppStore'dan uygulamanın son sürümünü yükleyin.");
+				"COVID Alert Malta uygulamasının yeni sürümü bulunuyor. Uygulamayı en iyi şekilde kullanabilmek için AppStore'dan uygulamanın son sürümünü yükleyin.");
 		infoBoxtr.setTitle("Güncelleştirme mevcut");
 		infoBoxtr.setUrlTitle("Güncelle");
 		infoBoxtr.setUrl(appstoreUrl);
@@ -374,7 +398,7 @@ public class GaenConfigController {
 
 		InfoBox infoBoxti = new InfoBox();
 		infoBoxti.setMsg(
-				"ሓድሽ ቨርዝዮን ናይ SwissCovid ተቐሪቡ። ዝበለጸ ኣሰራርሓ ናይቲ ኤፕ መታን ክወሃበኩም፣ እቲ ሓድሽ ቨርዝዮን ካብ AppStore ብዳውንሎድ ኣምጽኡ ኢኹም።");
+				"ሓድሽ ቨርዝዮን ናይ COVID Alert Malta ተቐሪቡ። ዝበለጸ ኣሰራርሓ ናይቲ ኤፕ መታን ክወሃበኩም፣ እቲ ሓድሽ ቨርዝዮን ካብ AppStore ብዳውንሎድ ኣምጽኡ ኢኹም።");
 		infoBoxti.setTitle("ሓድሽ ኤፕ-ኣፕደይት ኣሎ");
 		infoBoxti.setUrlTitle("ምምሕዳስ");
 		infoBoxti.setUrl(appstoreUrl);
@@ -383,6 +407,7 @@ public class GaenConfigController {
 		InfoBoxCollection collection = new InfoBoxCollection();
 		collection.setDeInfoBox(infoBoxde);
 		collection.setEnInfoBox(infoBoxen);
+		collection.setMtInfobox(infoBoxmt);
 		collection.setFrInfoBox(infoBoxfr);
 		collection.setItInfoBox(infoBoxit);
 		collection.setPtInfoBox(infoBoxpt);
@@ -429,6 +454,7 @@ public class GaenConfigController {
 				setRm(getWhatToDoPositiveTestText(messages, Locale.forLanguageTag("rm")));
 				setTr(getWhatToDoPositiveTestText(messages, Locale.forLanguageTag("tr")));
 				setTi(getWhatToDoPositiveTestText(messages, Locale.forLanguageTag("ti")));
+				setMt(getWhatToDoPositiveTestText(messages, Locale.forLanguageTag("mt")));
 			}
 		};
 	}

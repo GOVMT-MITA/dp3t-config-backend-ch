@@ -88,6 +88,7 @@ public abstract class WSBaseConfig implements SchedulingConfigurer, WebMvcConfig
 	public HeaderInjector securityHeaderInjector(){
 		return new HeaderInjector(additionalHeaders);
 	}
+	
 	@Override
 	public void addInterceptors(InterceptorRegistry registry) {
 		registry.addInterceptor(securityHeaderInjector());

@@ -29,6 +29,17 @@ public class WhatToDoPositiveTestTextsCollection {
 	private WhatToDoPositiveTestTexts rm;
 	private WhatToDoPositiveTestTexts tr;
 	private WhatToDoPositiveTestTexts ti;
+	private WhatToDoPositiveTestTexts mt;
+	
+	
+
+	public WhatToDoPositiveTestTexts getMt() {
+		return mt;
+	}
+
+	public void setMt(WhatToDoPositiveTestTexts mt) {
+		this.mt = mt;
+	}
 
 	public WhatToDoPositiveTestTexts getDe() {
 		return de;

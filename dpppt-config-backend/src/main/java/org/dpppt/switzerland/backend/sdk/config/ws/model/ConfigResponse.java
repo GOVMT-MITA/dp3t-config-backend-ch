@@ -10,6 +10,7 @@
 
 package org.dpppt.switzerland.backend.sdk.config.ws.model;
 
+import java.util.List;
 import java.util.Map;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
@@ -35,6 +36,29 @@ public class ConfigResponse {
 	private GAENSDKConfig iOSGaenSdkConfig = new GAENSDKConfig();
 	@Documentation(description = "GAEN epidemiological parameters for Android")
 	private GAENSDKConfig androidGaenSdkConfig = new GAENSDKConfig();
+	
+	@Documentation(description = "Indicated whether sharing of keys with other EU member states is enabled")
+	private boolean euSharingEnabled = true;
+		
+	@Documentation(description = "List of countries participating in the sharing of infected keys")
+	private List<ParticipatingCountry> euSharingCountries;	
+
+	
+	public List<ParticipatingCountry> getEuSharingCountries() {
+		return euSharingCountries;
+	}
+
+	public void setEuSharingCountries(List<ParticipatingCountry> euSharingCountries) {
+		this.euSharingCountries = euSharingCountries;
+	}
+
+	public boolean isEuSharingEnabled() {
+		return euSharingEnabled;
+	}
+
+	public void setEuSharingEnabled(boolean euSharingEnabled) {
+		this.euSharingEnabled = euSharingEnabled;
+	}
 
 	public boolean isForceUpdate() {
 		return forceUpdate;

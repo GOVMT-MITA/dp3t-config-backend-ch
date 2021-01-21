@@ -30,6 +30,7 @@ public class InfoBoxCollection {
 	private InfoBox rmInfoBox;
 	private InfoBox trInfobox;
 	private InfoBox tiInfobox;
+	private InfoBox mtInfobox;
 
 	public void setAllInfoBoxes(InfoBox infoBox) {
 		this.deInfoBox = infoBox;
@@ -43,7 +44,19 @@ public class InfoBoxCollection {
 		this.hrInfoBox = infoBox;
 		this.srInfoBox = infoBox;
 		this.rmInfoBox = infoBox;
+		this.mtInfobox = infoBox;
 	}
+
+	
+	public InfoBox getMtInfobox() {
+		return mtInfobox;
+	}
+
+
+	public void setMtInfobox(InfoBox mtInfobox) {
+		this.mtInfobox = mtInfobox;
+	}
+
 
 	public InfoBox getPtInfoBox() {
 		return this.ptInfoBox;
