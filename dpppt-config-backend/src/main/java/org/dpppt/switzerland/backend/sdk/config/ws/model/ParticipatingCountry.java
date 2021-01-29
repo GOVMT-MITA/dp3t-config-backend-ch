@@ -8,6 +8,22 @@ public class ParticipatingCountry {
 	private String countryCode;
 	private String countryName;
 	
+	
+	
+	public ParticipatingCountry() {
+		super();
+	}
+
+	public ParticipatingCountry(String countryCode, String countryName) {
+		super();
+		this.countryCode = countryCode;
+		this.countryName = countryName;
+	}
+	
+	public static ParticipatingCountry build(String countryCode, String countryName) {
+		return new ParticipatingCountry(countryCode, countryName);
+		
+	}
 	public String getCountryCode() {
 		return countryCode;
 	}

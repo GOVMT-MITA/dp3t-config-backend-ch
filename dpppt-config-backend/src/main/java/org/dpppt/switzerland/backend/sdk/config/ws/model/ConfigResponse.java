@@ -37,13 +37,23 @@ public class ConfigResponse {
 	@Documentation(description = "GAEN epidemiological parameters for Android")
 	private GAENSDKConfig androidGaenSdkConfig = new GAENSDKConfig();
 	
+	@Documentation(description = "Version number of the configuration")
+	private int configVersion = 1;
+	
 	@Documentation(description = "Indicated whether sharing of keys with other EU member states is enabled")
 	private boolean euSharingEnabled = true;
 		
 	@Documentation(description = "List of countries participating in the sharing of infected keys")
 	private List<ParticipatingCountry> euSharingCountries;	
 
-	
+	public int getConfigVersion() {
+		return configVersion;
+	}
+
+	public void setConfigVersion(int configVersion) {
+		this.configVersion = configVersion;
+	}
+
 	public List<ParticipatingCountry> getEuSharingCountries() {
 		return euSharingCountries;
 	}

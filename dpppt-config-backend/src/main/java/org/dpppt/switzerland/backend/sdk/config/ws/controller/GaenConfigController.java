@@ -12,10 +12,10 @@ package org.dpppt.switzerland.backend.sdk.config.ws.controller;
 
 import java.time.Duration;
 import java.util.Arrays;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Locale;
-
-import javax.swing.event.ListSelectionEvent;
+import java.util.stream.Collectors;
 
 import org.dpppt.switzerland.backend.sdk.config.ws.helper.IOS136InfoBoxHelper;
 import org.dpppt.switzerland.backend.sdk.config.ws.helper.MockHelper;
@@ -24,6 +24,7 @@ import org.dpppt.switzerland.backend.sdk.config.ws.model.ConfigResponse;
 import org.dpppt.switzerland.backend.sdk.config.ws.model.FaqEntry;
 import org.dpppt.switzerland.backend.sdk.config.ws.model.InfoBox;
 import org.dpppt.switzerland.backend.sdk.config.ws.model.InfoBoxCollection;
+import org.dpppt.switzerland.backend.sdk.config.ws.model.ParticipatingCountry;
 import org.dpppt.switzerland.backend.sdk.config.ws.model.WhatToDoPositiveTestTexts;
 import org.dpppt.switzerland.backend.sdk.config.ws.model.WhatToDoPositiveTestTextsCollection;
 import org.dpppt.switzerland.backend.sdk.config.ws.poeditor.Messages;
@@ -40,7 +41,6 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 
 import ch.ubique.openapi.docannotations.Documentation;
-import io.jsonwebtoken.lang.Collections;
 
 /**
  * 
@@ -125,8 +125,26 @@ public class GaenConfigController {
 		
 		ConfigResponse config = new ConfigResponse();
 		
+		config.setConfigVersion(1);
 		config.setEuSharingEnabled(false);
-		config.setEuSharingCountries(null);
+		config.setEuSharingCountries(List.of(
+				ParticipatingCountry.build("DE", "Germany"),
+				ParticipatingCountry.build("IE", "Ireland"),
+				ParticipatingCountry.build("IT", "Italy"),
+				ParticipatingCountry.build("ES", "Spain"),
+				ParticipatingCountry.build("LV", "Latvia"),
+				ParticipatingCountry.build("DK", "Denmark"),
+				ParticipatingCountry.build("HR", "Hungary"),
+				ParticipatingCountry.build("PL", "Poland"),
+				ParticipatingCountry.build("CZ", "Croatia"),
+				ParticipatingCountry.build("NL", "Nethderlands"),
+				ParticipatingCountry.build("BE", "Belgium"),
+				ParticipatingCountry.build("FI", "Finland"),
+				ParticipatingCountry.build("CY", "Cyprus")
+				).stream()
+				.sorted(Comparator.comparing(ParticipatingCountry::getCountryName))
+				.collect(Collectors.toList())
+				);
 		
 		config.setWhatToDoPositiveTestTexts(whatToDoPositiveTestTexts(messages));
 		config.setTestLocations(testLocationHelper.getTestLocations());
